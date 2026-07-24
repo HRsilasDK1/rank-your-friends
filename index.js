@@ -2,6 +2,7 @@ const button = document.getElementById("random-btn");
 const categoryBox = document.getElementById("category-box");
 
 let categories = [];
+let availableCategories = [];
 
 async function loadCategories() {
     try {
@@ -9,18 +10,37 @@ async function loadCategories() {
         const data = await response.json();
 
         categories = data.categories;
+
+        // Opret første blandede liste
+        reshuffleCategories();
+
     } catch (error) {
         categoryBox.textContent = "Kunne ikke indlæse categories.json";
         console.error(error);
     }
 }
 
-button.addEventListener("click", () => {
-    if (categories.length === 0) return;
+function reshuffleCategories() {
+    availableCategories = [...categories];
 
-    const randomIndex = Math.floor(Math.random() * categories.length);
-    console.log(`Random index: ${randomIndex}, Category: ${categories[randomIndex]}, Categories length: ${categories.length}`);
-    categoryBox.textContent = categories[randomIndex];
+    // Fisher-Yates shuffle
+    for (let i = availableCategories.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [availableCategories[i], availableCategories[j]] = [
+            availableCategories[j],
+            availableCategories[i]
+        ];
+    }
+}
+
+button.addEventListener("click", () => {
+    if (availableCategories.length === 0) {
+        reshuffleCategories();
+    }
+
+    const category = availableCategories.pop();
+
+    categoryBox.textContent = category;
 });
 
 loadCategories();
